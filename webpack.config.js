@@ -3,19 +3,17 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = (opts) => {
-  opts = Object.assign(
-    {
-      env: 'dev',
-      analyze: false,
-    },
-    opts
-  );
+  opts = {
+    env: 'dev',
+    analyze: false,
+    ...opts,
+  };
   const isDev = opts.env === 'dev';
 
   return {
     mode: isDev ? 'development' : 'production',
     context: __dirname,
-    entry: './src/index.jsx',
+    entry: './src/index.tsx',
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'bundle.js',
@@ -23,13 +21,17 @@ module.exports = (opts) => {
     module: {
       rules: [
         {
+          test: /\.ts|tsx?$/,
+          loader: 'awesome-typescript-loader',
+        },
+        {
           test: /\.(js|jsx)$/,
           use: 'babel-loader',
           exclude: /node_modules/,
         },
         {
           enforce: 'pre',
-          test: /\.(js|jsx)$/,
+          test: /\.(js|jsx|ts|tsx)$/,
           exclude: /node_modules/,
           loader: 'eslint-loader',
         },
@@ -54,7 +56,7 @@ module.exports = (opts) => {
         },
         {
           test: /\.(png|svg|jpg|gif)$/,
-          use: [{ loader: 'url-loader' }, { options: { limit: 8192 } }],
+          use: [{ loader: 'file-loader' }],
         },
         {
           test: /\.(woff|woff2|eot|ttf|otf)$/,
@@ -63,10 +65,10 @@ module.exports = (opts) => {
       ],
     },
     resolve: {
-      extensions: ['.js', '.jsx'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     devServer: {
-      contentBase: './dist',
+      contentBase: path.join(__dirname, 'dist'),
     },
     plugins: ((plugins) => {
       if (!isDev) {
